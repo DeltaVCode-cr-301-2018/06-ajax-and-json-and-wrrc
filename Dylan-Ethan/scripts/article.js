@@ -13,7 +13,7 @@ function Article (rawDataObj) {
 Article.all = [];
 
 // COMMENT: Why isn't this method written as an arrow function?
-// PUT YOUR RESPONSE HERE
+// it contains "this".
 Article.prototype.toHtml = function() {
   let template = Handlebars.compile($('#article-template').text());
 
@@ -21,7 +21,7 @@ Article.prototype.toHtml = function() {
 
   // COMMENT: What is going on in the line below? What do the question mark and colon represent? How have we seen this same logic represented previously?
   // Not sure? Check the docs!
-  // PUT YOUR RESPONSE HERE
+  // This is a "turnary" opperatater, it runs like an if else with two states, true and false combined into one line.
   this.publishStatus = this.publishedOn ? `published ${this.daysAgo} days ago` : '(draft)';
   this.body = marked(this.body);
 
@@ -33,7 +33,7 @@ Article.prototype.toHtml = function() {
 // REVIEW: This function will take the rawData, how ever it is provided, and use it to instantiate all the articles. This code is moved from elsewhere, and encapsulated in a simply-named function for clarity.
 
 // COMMENT: Where is this function called? What does 'rawData' represent now? How is this different from previous labs?
-// PUT YOUR RESPONSE HERE
+// it is being ran from the fetch function, stating if we dont need to fetch, then load the data we have. We changed this because this project is working with local storage rather than initializing every time the page loads.
 Article.loadAll = articleData => {
   articleData.sort((a,b) => (new Date(b.publishedOn)) - (new Date(a.publishedOn)))
 
@@ -44,12 +44,13 @@ Article.loadAll = articleData => {
 Article.fetchAll = () => {
   if (localStorage.rawData) {
     // REVIEW: When rawData is already in localStorage we can load it with the .loadAll function above and then render the index page (using the proper method on the articleView object).
-
-    //TODO: This function takes in an argument. What do we pass in?
-    Article.loadAll();
+    console.log(Article.all);
+    /*TODO: This function takes in an argument. What do we pass in?*/
+    Article.loadAll( $.getJSON('./data/hackerIpsum.json'));
+    console.log(Article.All);
 
     //TODO: What method do we call to render the index page?
-
+    Article.intIndexPage();
     // COMMENT: How is this different from the way we rendered the index page previously? What the benefits of calling the method here?
     // PUT YOUR RESPONSE HERE
 
