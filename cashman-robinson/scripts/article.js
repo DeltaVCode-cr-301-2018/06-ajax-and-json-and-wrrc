@@ -42,7 +42,41 @@ Article.loadAll = articleData => {
 
 // REVIEW: This function will retrieve the data from either a local or remote source, and process it, then hand off control to the View.
 Article.fetchAll = () => {
-  if (localStorage.rawData) {
+
+  $.ajax({
+    method: 'HEAD',
+    async: true,
+    url: './data/hackerIpsum.json',
+    success: function(data, status, xhr){
+      var currentEtag = xhr.getResponseHeader('etag');
+      console.log(currentEtag);
+      if(currentEtag !== localStorage.etag){
+        localStorage.etag = currentEtag;
+        console.log('etag has changed!');
+        $.getJSON('./data/hackerIpsum.json')
+          .then(function(data, status, xhr){
+            Article.loadAll(data);
+            articleView.initIndexPage();
+            localStorage.rawData = JSON.stringify(data);
+          })
+      } else if (localStorage.rawData) {
+        // REVIEW: When rawData is already in localStorage we can load it with the .loadAll function above and then render the index page (using the proper method on the articleView object).
+    
+        //TO/DO: This function takes in an argument. What do we pass in?
+        Article.loadAll(JSON.parse(localStorage.rawData));
+    
+        //TO/DO: What method do we call to render the index page?
+        articleView.initIndexPage();
+        // COMMENT: How is this different from the way we rendered the index page previously? What the benefits of calling the method here?
+        // Before we called a function on the index.html page that was a function that contained all of the functions for rendering the page. It a faster and more fluid way of loading all of the content of the page.
+    
+      }
+    }
+  });
+
+  
+
+  /*if (localStorage.rawData) {
     // REVIEW: When rawData is already in localStorage we can load it with the .loadAll function above and then render the index page (using the proper method on the articleView object).
 
     //TO/DO: This function takes in an argument. What do we pass in?
@@ -65,5 +99,5 @@ Article.fetchAll = () => {
       
     // COMMENT: Discuss the sequence of execution in this 'else' conditional. Why are these functions executed in this order?
     // The reason you would execute them in this order is because you want the data to be available before you attempt to initialize it.
-  }
+  }*/
 }
