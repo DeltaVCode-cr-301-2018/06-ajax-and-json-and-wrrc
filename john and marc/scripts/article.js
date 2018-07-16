@@ -37,7 +37,6 @@ Article.prototype.toHtml = function() {
 // This is different from previous labs in that we had the blog articles.js file ran first which created a raw data object. That object was sorted at the bottom of articles.js then each of the articles were constructed and pushed into a generic array called Articles. Now when loadAll is called, data is pulled from localStorage, the objects are sorted by date, then constructed, then pushed into an array that relates to all Article objects.
 
 Article.loadAll = articleData => {
-  // console.log(articleData[0]);
   articleData.sort((a,b) => (new Date(b.publishedOn)) - (new Date(a.publishedOn)));
   // console.log(articleData[0]);
   articleData.forEach(articleObject => Article.all.push(new Article(articleObject)));
@@ -50,19 +49,7 @@ Article.fetchAll = () => {
     // REVIEW: When rawData is already in localStorage we can load it with the .loadAll function above and then render the index page (using the proper method on the articleView object).
 
     //TODO: This function takes in an argument. What do we pass in?
-
-
-
-    $.getJSON('./data/hackerIpsum.json')
-
-
-
-
-    Article.loadAll();
-
-
-
-
+    Article.loadAll(JSON.parse(localStorage.rawData));
     //TODO: What method do we call to render the index page?
 
     // COMMENT: How is this different from the way we rendered the index page previously? What the benefits of calling the method here?
@@ -74,6 +61,7 @@ Article.fetchAll = () => {
     $.getJSON('./data/hackerIpsum.json').then(function(data, status, xhr) {
       // What to do with data when success
       // console.log(data);
+      localStorage.setItem('rawData', JSON.stringify(data));
       Article.loadAll(data);
     }, function(err) {
       // What to do when error happens
