@@ -19,8 +19,10 @@ Article.prototype.toHtml = function() {
 
   this.daysAgo = parseInt((new Date() - new Date(this.publishedOn))/60/60/24/1000);
 
-  // COMMENT: What is going on in the line below? What do the question mark and colon represent? How have we seen this same logic represented previously? Not sure? Check the docs!
-  // PUT YOUR RESPONSE HERE
+
+  // COMMENT: What is going on in the line below? What do the question mark and colon represent? How have we seen this same logic represented previously?
+  // Not sure? Check the docs!
+  // The question mark and colon represent a conditional ternary operator. It looks at the publishedOn property of each article. If a date exists the published status will be something like "published 5 days ago". If a date doesn't exist the published status will be "(draft)""
   this.publishStatus = this.publishedOn ? `published ${this.daysAgo} days ago` : '(draft)';
   this.body = marked(this.body);
 
@@ -48,7 +50,9 @@ Article.fetchAll = () => {
     //TODO: This function takes in an argument. What do we pass in?
 
 
+
     $.getJSON('./data/hackerIpsum.json')
+
 
 
 
@@ -64,6 +68,14 @@ Article.fetchAll = () => {
 
   } else {
     // TODO: When we don't already have the rawData, we need to retrieve the JSON file from the server with AJAX (which jQuery method is best for this?), cache it in localStorage so we can skip the server call next time, then load all the data into Article.all with the .loadAll function above, and then render the index page.
+    // The jQuery method $.getJSON and .then() are the best for this.
+    $.getJSON('./data/hackerIpsum.json').then(function(data, status, xhr) {
+      // What to do with data when success
+      console.log('success');
+    }, function(err) {
+      // What to do when error happens
+      console.log(err);
+    });
 
     
 
