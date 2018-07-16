@@ -37,9 +37,11 @@ Article.prototype.toHtml = function() {
 // This is different from previous labs in that we had the blog articles.js file ran first which created a raw data object. That object was sorted at the bottom of articles.js then each of the articles were constructed and pushed into a generic array called Articles. Now when loadAll is called, data is pulled from localStorage, the objects are sorted by date, then constructed, then pushed into an array that relates to all Article objects.
 
 Article.loadAll = articleData => {
-  articleData.sort((a,b) => (new Date(b.publishedOn)) - (new Date(a.publishedOn)))
-
-  articleData.forEach(articleObject => Article.all.push(new Article(articleObject)))
+  // console.log(articleData[0]);
+  articleData.sort((a,b) => (new Date(b.publishedOn)) - (new Date(a.publishedOn)));
+  // console.log(articleData[0]);
+  articleData.forEach(articleObject => Article.all.push(new Article(articleObject)));
+  // console.log(Article.all);
 }
 
 // REVIEW: This function will retrieve the data from either a local or remote source, and process it, then hand off control to the View.
@@ -71,7 +73,8 @@ Article.fetchAll = () => {
     // The jQuery method $.getJSON and .then() are the best for this.
     $.getJSON('./data/hackerIpsum.json').then(function(data, status, xhr) {
       // What to do with data when success
-      console.log('success');
+      // console.log(data);
+      Article.loadAll(data);
     }, function(err) {
       // What to do when error happens
       console.log(err);
@@ -80,6 +83,6 @@ Article.fetchAll = () => {
     
 
     // COMMENT: Discuss the sequence of execution in this 'else' conditional. Why are these functions executed in this order?
-    // PUT YOUR RESPONSE HERE
+    // The first thing that happens is we use jQuery's $.getJSON method to reference the file location. Then we chain the .then() function that requires two function parameters - the first being the success function and the second being the fail function. If the file is found the first function is run. If the file cannot be found the second function is run.
   }
 }
