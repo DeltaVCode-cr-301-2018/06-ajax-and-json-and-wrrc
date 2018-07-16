@@ -54,18 +54,20 @@ Article.fetchAll = () => {
     ////We call the function Article.fetchAll(); at the bottom of the index page.
 
     // COMMENT: How is this different from the way we rendered the index page previously? What the benefits of calling the method here?
-    ////We called articleView.initIndexPage(); then on the articleview.js we run articles.forEach(article => $('#articles').append(article.toHtml())); to add articles to the index page. Now we are calling the fetchAll to get data and then calling the articleView.initIndexPage(); once we have all our data. 
+    ////We called articleView.initIndexPage(); then on the articleview.js we run articles.forEach(article => $('#articles').append(article.toHtml())); to add articles to the index page. Now we are calling the fetchAll to get data and then calling the articleView.initIndexPage(); once we have all our data.
 
   } else {
     // TODO: When we don't already have the rawData, we need to retrieve the JSON file from the server with AJAX (which jQuery method is best for this?), cache it in localStorage so we can skip the server call next time, then load all the data into Article.all with the .loadAll function above, and then render the index page.
     $.getJSON('./data/hackerIpsum.json').then(function (data) {
       //console.log(data);
 
-      // Do something with the data we received!//this is an array of raw data objects. 
+      // Do something with the data we received!//this is an array of raw data objects.
       Article.loadAll(data);
       articleView.initIndexPage();
-      localstorage.setItem('testing', JSON.stringify(data));
-      
+      //put into location storage so we dont have to ask for again.
+      localStorage.setItem('rawData', JSON.stringify(Article.all));
+      console.log(localStorage);
+
     })
     // COMMENT: Discuss the sequence of execution in this 'else' conditional. Why are these functions executed in this order?
     // We execute the functions in this order, so that we have the data from the json file before we try and load it.
