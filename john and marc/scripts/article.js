@@ -37,6 +37,7 @@ Article.prototype.toHtml = function() {
 // This is different from previous labs in that we had the blog articles.js file ran first which created a raw data object. That object was sorted at the bottom of articles.js then each of the articles were constructed and pushed into a generic array called Articles. Now when loadAll is called, data is pulled from localStorage, the objects are sorted by date, then constructed, then pushed into an array that relates to all Article objects.
 
 Article.loadAll = articleData => {
+  // console.log(articleData[0]);
   articleData.sort((a,b) => (new Date(b.publishedOn)) - (new Date(a.publishedOn)));
   // console.log(articleData[0]);
   articleData.forEach(articleObject => Article.all.push(new Article(articleObject)));
@@ -50,10 +51,12 @@ Article.fetchAll = () => {
 
     //TODO: This function takes in an argument. What do we pass in?
     Article.loadAll(JSON.parse(localStorage.rawData));
+
     //TODO: What method do we call to render the index page?
+    articleView.initIndexPage();
 
     // COMMENT: How is this different from the way we rendered the index page previously? What the benefits of calling the method here?
-    // PUT YOUR RESPONSE HERE
+    // Last week we initialized the Index Page using a standalone <script> tag at the bottom of index.html. Calling this method here ensures that all other scripts have been set up before calling initIndexPage. We now need to only call Article.fetchAll(); from the index.html file.
 
   } else {
     // TODO: When we don't already have the rawData, we need to retrieve the JSON file from the server with AJAX (which jQuery method is best for this?), cache it in localStorage so we can skip the server call next time, then load all the data into Article.all with the .loadAll function above, and then render the index page.
