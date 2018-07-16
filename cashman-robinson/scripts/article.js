@@ -46,10 +46,10 @@ Article.fetchAll = () => {
     // REVIEW: When rawData is already in localStorage we can load it with the .loadAll function above and then render the index page (using the proper method on the articleView object).
 
     //TO/DO: This function takes in an argument. What do we pass in?
-    Article.loadAll(localStorage.rawData);
+    Article.loadAll(JSON.parse(localStorage.rawData));
 
     //TO/DO: What method do we call to render the index page?
-    Article.all.toHtml();
+    articleView.initIndexPage();
     // COMMENT: How is this different from the way we rendered the index page previously? What the benefits of calling the method here?
     // Before we called a function on the index.html page that was a function that contained all of the functions for rendering the page. It a faster and more fluid way of loading all of the content of the page.
 
@@ -59,6 +59,7 @@ Article.fetchAll = () => {
       .then(function(data, status, xhr){
         Article.loadAll(data);
         articleView.initIndexPage();
+        localStorage.rawData = JSON.stringify(data);
       })
 
       
