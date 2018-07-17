@@ -30,9 +30,9 @@ Article.prototype.toHtml = function() {
 
 // REVIEW: There are some other functions that also relate to all articles across the board, rather than just single instances. Object-oriented programming would call these "class-level" functions, that are relevant to the entire "class" of objects that are Articles.
 
-// REVIEW: This function will take the rawData, how ever it is provided, and use it to instantiate all the articles. This code is moved from elsewhere, and encapsulated in a simply-named function for clarity.
+// REVIEW: This function will take the articleData, how ever it is provided, and use it to instantiate all the articles. This code is moved from elsewhere, and encapsulated in a simply-named function for clarity.
 
-// COMMENT: Where is this function called? What does 'rawData' represent now? How is this different from previous labs?
+// COMMENT: Where is this function called? What does 'articleData' represent? How is this different from previous labs?
 // PUT YOUR RESPONSE HERE
 Article.loadAll = articleData => {
   articleData.sort((a,b) => (new Date(b.publishedOn)) - (new Date(a.publishedOn)))
@@ -42,21 +42,39 @@ Article.loadAll = articleData => {
 
 // REVIEW: This function will retrieve the data from either a local or remote source, and process it, then hand off control to the View.
 Article.fetchAll = () => {
+  // Three ways to access localStorage values:
+  // 1. localStorage.getItem('rawData')
+  // 2. localStorage['rawData']
+  // 3. localStorage.rawData
+
+  // Three ways to set localStorage values:
+  // 1. localStorage.setItem('rawData', value)
+  // 2. localStorage['rawData'] = value
+  // 3. localStorage.rawData = value
   if (localStorage.rawData) {
     // REVIEW: When rawData is already in localStorage we can load it with the .loadAll function above and then render the index page (using the proper method on the articleView object).
 
-    //TODO: This function takes in an argument. What do we pass in?
-    Article.loadAll();
-
-    //TODO: What method do we call to render the index page?
-
-    // COMMENT: How is this different from the way we rendered the index page previously? What the benefits of calling the method here?
-    // PUT YOUR RESPONSE HERE
-
-  } else {
-    // TODO: When we don't already have the rawData, we need to retrieve the JSON file from the server with AJAX (which jQuery method is best for this?), cache it in localStorage so we can skip the server call next time, then load all the data into Article.all with the .loadAll function above, and then render the index page.
-
-    // COMMENT: Discuss the sequence of execution in this 'else' conditional. Why are these functions executed in this order?
-    // PUT YOUR RESPONSE HERE
+    try {
+      let articles = JSON.parse(localStorage.rawData);
+      if (articles.length > 0) {
+        Article.loadAll(articles);
+        articleView.initIndexPage();
+        return;
+      }
+    }
+    catch (error) {
+      console.error(error);
+    }
   }
+
+  $.getJSON('/data/hackerIpsum.json')
+    .then(function(data) {
+      Article.loadAll(data);
+      articleView.initIndexPage();
+
+      // Cache the json, so we don't need to request it next time.
+      localStorage.rawData = JSON.stringify(data);
+    }, function(err) {
+      console.error(err);
+    });
 }
