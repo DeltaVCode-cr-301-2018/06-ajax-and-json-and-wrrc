@@ -70,6 +70,11 @@ Article.fetchAll = (onSuccess) => {
     }
   }
 
+    fetchFromJson(onSuccess);
+  })
+}
+
+function fetchFromJson(onSuccess) {
   $.getJSON('/data/hackerIpsum.json')
     .then(function(data) {
       Article.loadAll(data);
