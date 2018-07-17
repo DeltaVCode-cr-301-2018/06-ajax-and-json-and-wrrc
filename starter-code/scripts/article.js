@@ -51,24 +51,37 @@ Article.fetchAll = (onSuccess) => {
   // 1. localStorage.setItem('rawData', value)
   // 2. localStorage['rawData'] = value
   // 3. localStorage.rawData = value
-  if (localStorage.rawData) {
-    // REVIEW: When rawData is already in localStorage we can load it with the .loadAll function above and then render the index page (using the proper method on the articleView object).
 
-    try {
-      let articles = JSON.parse(localStorage.rawData);
-      if (articles.length > 0) {
-        Article.loadAll(articles);
+  if (!localStorage.rawData) {
+    fetchFromJson(onSuccess);
+    return;
+  }
 
-        //articleView.initIndexPage();
-        onSuccess();
+  // Check HEAD request for etag change
+  $.ajax({
+    url: './data/hackerIpsum.json',
+    method: 'HEAD',
+  }).then(function (data, status, xhr){
+    let newEtag = xhr.getResponseHeader('etag');
+    let oldEtag = localStorage.rawDataEtag;
+    console.log({ oldEtag, newEtag });
 
-        return;
+    if (oldEtag === newEtag) {
+      try {
+        let articles = JSON.parse(localStorage.rawData);
+        if (articles.length > 0) {
+          Article.loadAll(articles);
+
+          //articleView.initIndexPage();
+          onSuccess();
+
+          return;
+        }
+      }
+      catch (error) {
+        console.error(error);
       }
     }
-    catch (error) {
-      console.error(error);
-    }
-  }
 
     fetchFromJson(onSuccess);
   })
@@ -76,7 +89,8 @@ Article.fetchAll = (onSuccess) => {
 
 function fetchFromJson(onSuccess) {
   $.getJSON('/data/hackerIpsum.json')
-    .then(function(data) {
+    .then(function(data, status, xhr) {
+
       Article.loadAll(data);
 
       //articleView.initIndexPage();
@@ -84,6 +98,7 @@ function fetchFromJson(onSuccess) {
 
       // Cache the json, so we don't need to request it next time.
       localStorage.rawData = JSON.stringify(data);
+      localStorage.rawDataEtag = xhr.getResponseHeader('etag');
     }, function(err) {
       console.error(err);
     });
