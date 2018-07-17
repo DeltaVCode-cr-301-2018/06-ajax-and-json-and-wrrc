@@ -47,33 +47,35 @@ Article.loadAll = articleData => {
 // REVIEW: This function will retrieve the data from either a local or remote source, and process it, then hand off control to the View.
 Article.fetchAll = () => {
   if (localStorage.rawData) {
-    // REVIEW: When rawData is already in localStorage we can load it with the .loadAll function above and then render the index page (using the proper method on the articleView object).
+    try {
+      let articles = JSON.parse(localStorage.rawData);
+      if (articles.length > 0) {
+        Article.loadAll(articles);
+        articleView.initIndexPage();
+        return;
+      }
+    }
+    catch (error) {
+      console.error(error);
+    }
+  }
 
-    //TODO: This function takes in an argument. What do we pass in?
-    Article.loadAll(JSON.parse(localStorage.rawData));
-
-    //TODO: What method do we call to render the index page?
-    articleView.initIndexPage();
-
-    // COMMENT: How is this different from the way we rendered the index page previously? What the benefits of calling the method here?
-    // Last week we initialized the Index Page using a standalone <script> tag at the bottom of index.html. Calling this method here ensures that all other scripts have been set up before calling initIndexPage. We now need to only call Article.fetchAll(); from the index.html file.
-
-  } else {
-    // TODO: When we don't already have the rawData, we need to retrieve the JSON file from the server with AJAX (which jQuery method is best for this?), cache it in localStorage so we can skip the server call next time, then load all the data into Article.all with the .loadAll function above, and then render the index page.
-    // The jQuery method $.getJSON and .then() are the best for this.
-    $.getJSON('./data/hackerIpsum.json').then(function(data, status, xhr) {
-      // What to do with data when success
-      // console.log(data);
-      localStorage.setItem('rawData', JSON.stringify(data));
+  $.getJSON('./data/hackerIpsum.json')
+    .then(function(data) {
       Article.loadAll(data);
+      articleView.initIndexPage();
+
+      //3 ways to access localStorage values:
+      // 1. localStorage.getItem('rawData')
+      // 2. localStorage['rawData']
+      // 3. localStorage.rawData
+
+      //3 ways to set localStorage values:
+      localStorage.setItem('rawData', JSON.stringify(data));
+      // localStorage.rawData = JSON.stringify(data);
+      // localStorage['rawData'] = JSON.stringify(data);
+      
     }, function(err) {
-      // What to do when error happens
       console.log(err);
     });
-
-    
-
-    // COMMENT: Discuss the sequence of execution in this 'else' conditional. Why are these functions executed in this order?
-    // The first thing that happens is we use jQuery's $.getJSON method to reference the file location. Then we chain the .then() function that requires two function parameters - the first being the success function and the second being the fail function. If the file is found the first function is run. If the file cannot be found the second function is run.
-  }
 }
