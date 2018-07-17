@@ -46,25 +46,45 @@ Article.loadAll = articleData => {
 
 // REVIEW: This function will retrieve the data from either a local or remote source, and process it, then hand off control to the View.
 Article.fetchAll = (onSuccess) => {
-  if (localStorage.rawData) {
-    try {
-      let articles = JSON.parse(localStorage.rawData);
-      if (articles.length > 0) {
-        Article.loadAll(articles);
-
-        // articleView.initIndexPage();
-        onSuccess();
-
-        return;
-      }
-    }
-    catch (error) {
-      console.error(error);
-    }
+  if (!localStorage.rawData) {
+    fetchFromJson(onSuccess);
+    return;
   }
 
+  // Check HEAD request for etag change
+  $.ajax({
+    url: './data/hackerIpsum.json',
+    method: 'HEAD',
+  }).then(function(data, status, xhr) {
+    let newEtag = xhr.getResponseHeader('etag');
+    let oldEtag = localStorage.rawDataEtag;
+    console.log({ oldEtag, newEtag});
+
+    if(oldEtag === newEtag) {
+      // load from localStorage
+      try {
+        let articles = JSON.parse(localStorage.rawData);
+        if (articles.length > 0) {
+          Article.loadAll(articles);
+  
+          // articleView.initIndexPage();
+          onSuccess();
+  
+          return;
+        }
+      }
+      catch (error) {
+        console.error(error);
+      }
+    }
+
+    fetchFromJson(onSuccess);
+  })
+}
+
+function fetchFromJson(onSuccess) {
   $.getJSON('./data/hackerIpsum.json')
-    .then(function(data) {
+    .then(function(data, status, xhr) {
       Article.loadAll(data);
 
       // articleView.initIndexPage();
@@ -76,9 +96,10 @@ Article.fetchAll = (onSuccess) => {
       // 3. localStorage.rawData
 
       //3 ways to set localStorage values:
-      localStorage.setItem('rawData', JSON.stringify(data));
-      // localStorage.rawData = JSON.stringify(data);
+      // localStorage.setItem('rawData', JSON.stringify(data));
+      localStorage.rawData = JSON.stringify(data);
       // localStorage['rawData'] = JSON.stringify(data);
+      localStorage.rawDataEtag = xhr.getResponseHeader('etag');
       
     }, function(err) {
       console.log(err);
