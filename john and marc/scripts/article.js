@@ -45,13 +45,16 @@ Article.loadAll = articleData => {
 }
 
 // REVIEW: This function will retrieve the data from either a local or remote source, and process it, then hand off control to the View.
-Article.fetchAll = () => {
+Article.fetchAll = (onSuccess) => {
   if (localStorage.rawData) {
     try {
       let articles = JSON.parse(localStorage.rawData);
       if (articles.length > 0) {
         Article.loadAll(articles);
-        articleView.initIndexPage();
+
+        // articleView.initIndexPage();
+        onSuccess();
+
         return;
       }
     }
@@ -63,7 +66,9 @@ Article.fetchAll = () => {
   $.getJSON('./data/hackerIpsum.json')
     .then(function(data) {
       Article.loadAll(data);
-      articleView.initIndexPage();
+
+      // articleView.initIndexPage();
+      onSuccess();
 
       //3 ways to access localStorage values:
       // 1. localStorage.getItem('rawData')
