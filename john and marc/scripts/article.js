@@ -45,35 +45,63 @@ Article.loadAll = articleData => {
 }
 
 // REVIEW: This function will retrieve the data from either a local or remote source, and process it, then hand off control to the View.
-Article.fetchAll = () => {
-  if (localStorage.rawData) {
-    // REVIEW: When rawData is already in localStorage we can load it with the .loadAll function above and then render the index page (using the proper method on the articleView object).
+Article.fetchAll = (onSuccess) => {
+  if (!localStorage.rawData) {
+    fetchFromJson(onSuccess);
+    return;
+  }
 
-    //TODO: This function takes in an argument. What do we pass in?
-    Article.loadAll(JSON.parse(localStorage.rawData));
+  // Check HEAD request for etag change
+  $.ajax({
+    url: './data/hackerIpsum.json',
+    method: 'HEAD',
+  }).then(function(data, status, xhr) {
+    let newEtag = xhr.getResponseHeader('etag');
+    let oldEtag = localStorage.rawDataEtag;
+    console.log({ oldEtag, newEtag});
 
-    //TODO: What method do we call to render the index page?
-    articleView.initIndexPage();
+    if(oldEtag === newEtag) {
+      // load from localStorage
+      try {
+        let articles = JSON.parse(localStorage.rawData);
+        if (articles.length > 0) {
+          Article.loadAll(articles);
+  
+          // articleView.initIndexPage();
+          onSuccess();
+  
+          return;
+        }
+      }
+      catch (error) {
+        console.error(error);
+      }
+    }
 
-    // COMMENT: How is this different from the way we rendered the index page previously? What the benefits of calling the method here?
-    // Last week we initialized the Index Page using a standalone <script> tag at the bottom of index.html. Calling this method here ensures that all other scripts have been set up before calling initIndexPage. We now need to only call Article.fetchAll(); from the index.html file.
+    fetchFromJson(onSuccess);
+  })
+}
 
-  } else {
-    // TODO: When we don't already have the rawData, we need to retrieve the JSON file from the server with AJAX (which jQuery method is best for this?), cache it in localStorage so we can skip the server call next time, then load all the data into Article.all with the .loadAll function above, and then render the index page.
-    // The jQuery method $.getJSON and .then() are the best for this.
-    $.getJSON('./data/hackerIpsum.json').then(function(data, status, xhr) {
-      // What to do with data when success
-      // console.log(data);
-      localStorage.setItem('rawData', JSON.stringify(data));
+function fetchFromJson(onSuccess) {
+  $.getJSON('./data/hackerIpsum.json')
+    .then(function(data, status, xhr) {
       Article.loadAll(data);
+
+      // articleView.initIndexPage();
+      onSuccess();
+
+      //3 ways to access localStorage values:
+      // 1. localStorage.getItem('rawData')
+      // 2. localStorage['rawData']
+      // 3. localStorage.rawData
+
+      //3 ways to set localStorage values:
+      // localStorage.setItem('rawData', JSON.stringify(data));
+      localStorage.rawData = JSON.stringify(data);
+      // localStorage['rawData'] = JSON.stringify(data);
+      localStorage.rawDataEtag = xhr.getResponseHeader('etag');
+      
     }, function(err) {
-      // What to do when error happens
       console.log(err);
     });
-
-    
-
-    // COMMENT: Discuss the sequence of execution in this 'else' conditional. Why are these functions executed in this order?
-    // The first thing that happens is we use jQuery's $.getJSON method to reference the file location. Then we chain the .then() function that requires two function parameters - the first being the success function and the second being the fail function. If the file is found the first function is run. If the file cannot be found the second function is run.
-  }
 }
